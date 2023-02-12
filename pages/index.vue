@@ -550,9 +550,7 @@ const [
   useAsyncData('updatedProjects', () => useBaseFetch(`search?limit=3&query=&index=updated`), {
     transform: (result) => result.hits,
   }),
-  useAsyncData('statistics', () => useBaseFetch(`statistics`), {
-    transform: (result) => result.hits,
-  }),
+  useAsyncData('statistics', () => useBaseFetch(`statistics`)),
 ])
 </script>
 
