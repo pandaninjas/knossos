@@ -1,4 +1,4 @@
-export default defineNitroPlugin((nitroApp) => {
+export default defineNitroPlugin((_nitroApp) => {
   // nitroApp.hooks.hook('render:html', (html, { event }) => {
   //   const cookies = parseCookies(event)
   //
