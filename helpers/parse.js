@@ -28,15 +28,30 @@ export const configuredXss = new xss.FilterXSS({
       const allowedSources = [
         {
           regex:
-            /^https?:\/\/(www\.)?youtube(-nocookie)?\.com\/embed\/[a-zA-Z0-9_-]{11}(\?&autoplay=[0-1]{1})?$/,
-          remove: ['&autoplay=1'], // Prevents autoplay
+            /^https?:\/\/(www\.)?youtube(-nocookie)?\.com\/embed\/[a-zA-Z0-9_-]{11}((&|\?)\w+=\w+)*$/,
+          remove: ['autoplay=1'], // Prevents autoplay
         },
       ]
 
       for (const source of allowedSources) {
         if (source.regex.test(value)) {
           for (const remove of source.remove) {
-            value = value.replace(remove, '')
+            let index = value.indexOf(remove);
+            do {
+              if (index - 1 > 0 && value.charAt(index - 1) === '?') {
+                // need to watch out for two things
+                // case where its ?stand=alone
+                // case where its ?followed=by&another=queryParam
+                if (index + remove.length < value.length && value.charAt(index + remove.length) === '&') {
+                  value = value.replace(`${remove}&`, '');
+                } else {
+                  value = value.replace(`?${remove}`, '');
+                }
+              } else {
+                value = value.replaceAll(`&${remove}`, ''); // can safely be removed
+              }
+              index = value.indexOf(remove);
+            } while (index !== -1);
           }
           return name + '="' + xss.escapeAttrValue(value) + '"'
         }
@@ -82,7 +97,7 @@ export const md = (options = {}) => {
         if (allowedHostnames.includes(url.hostname)) {
           return defaultLinkOpenRenderer(tokens, idx, options, env, self)
         }
-      } catch (err) {}
+      } catch (err) { }
     }
 
     tokens[idx].attrSet('rel', 'noopener nofollow ugc')
@@ -119,7 +134,7 @@ export const md = (options = {}) => {
         if (allowedHostnames.includes(url.hostname)) {
           return defaultImageRenderer(tokens, idx, options, env, self)
         }
-      } catch (err) {}
+      } catch (err) { }
       token.attrs[index][1] = `//wsrv.nl/?url=${encodeURIComponent(src)}`
     }
 
